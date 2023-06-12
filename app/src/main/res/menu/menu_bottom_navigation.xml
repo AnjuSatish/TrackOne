@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_locations"
+        android:icon="@drawable/ic_dashboard_home"
+        android:title="Locations" />
+    <item
+        android:id="@+id/menu_users_list"
+        android:icon="@drawable/ic_user_list"
+        android:title="Users List" />
+</menu>

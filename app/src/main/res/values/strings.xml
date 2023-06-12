@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">TrackOne</string>
+    <string name="title_activity_location">LocationActivity</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_weather_map_view">WeatherMapViewActivity</string>
+</resources>

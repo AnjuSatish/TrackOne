@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "679416230607",
+    "project_id": "trackone-a506e",
+    "storage_bucket": "trackone-a506e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:679416230607:android:7d3bd2560fef966139fdba",
+        "android_client_info": {
+          "package_name": "com.example.trackone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "679416230607-q6f2ir1glhqqj47em32k8n0kgllkpje9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBy-Csnkd5g_DZW-VWkeFdTa0nCluy2zZM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "679416230607-q6f2ir1glhqqj47em32k8n0kgllkpje9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
