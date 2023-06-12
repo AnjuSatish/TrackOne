@@ -169,9 +169,7 @@ class LocationActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
 
         } else {
-            // User is not authenticated, handle accordingly
         }
-        // Replace with your own logic to get the user ID
             }
 
 

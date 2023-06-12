@@ -78,7 +78,7 @@ class Signin : AppCompatActivity() {
             return
         }
 
-        // Firebase sign-in logic
+        // Firebase sign-in
         firebaseAuth.signInWithEmailAndPassword(username, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
