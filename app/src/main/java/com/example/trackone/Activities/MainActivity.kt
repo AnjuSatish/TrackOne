@@ -19,6 +19,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var confirmPasswordEditText: EditText
     private lateinit var termsCheckBox: CheckBox
     private lateinit var signupButton: Button
+    private lateinit var uname_tv: EditText
 
     private lateinit var firebaseAuth: FirebaseAuth
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,6 +33,8 @@ class MainActivity : ComponentActivity() {
         confirmPasswordEditText = findViewById(R.id.confirmPasswordEditText)
         termsCheckBox = findViewById(R.id.termsCheckBox)
         signupButton = findViewById(R.id.signupButton)
+        uname_tv = findViewById(R.id.uname_tv)
+
 
         // Set click listener for signup button
         signupButton.setOnClickListener {
@@ -77,16 +80,16 @@ class MainActivity : ComponentActivity() {
                     if (currentUser != null) {
                         val userId = currentUser.uid
                         val email = currentUser.email
+                        val name = uname_tv.text.toString()
 
-                        val user = email?.let { User(userId, it) }
-
+                        val user = email?.let { User(it, userId, name) }
                         val usersRef = FirebaseDatabase.getInstance().reference.child("users")
                         usersRef.child(userId).setValue(user)
                             .addOnSuccessListener {
 
                             }
                             .addOnFailureListener { error ->
-                                // Failed to store user information
+                                Toast.makeText(this,"Failed to store user information",Toast.LENGTH_SHORT).show()
                             }
                     Toast.makeText(this, "Signup successful", Toast.LENGTH_SHORT).show()
                     val intent = Intent(this, Signin::class.java)

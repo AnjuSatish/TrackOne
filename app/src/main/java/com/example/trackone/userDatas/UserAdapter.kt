@@ -3,12 +3,17 @@ package com.example.trackone.userDatas
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Filter
+import android.widget.Filterable
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.trackone.R
+import java.util.Locale
 
-class UserAdapter(private val userClickListener: UserClickListener) : RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
+class UserAdapter(private val userClickListener: UserClickListener) : RecyclerView.Adapter<UserAdapter.UserViewHolder>(),
+    Filterable {
     private var userList: List<User> = emptyList()
+
     interface UserClickListener {
         fun onUserClick(user: User)
     }
@@ -41,7 +46,7 @@ class UserAdapter(private val userClickListener: UserClickListener) : RecyclerVi
 
         fun bind(user: User, userClickListener: UserClickListener) {
            // nameTextView.text = user.name
-            emailTextView.text = user.email
+            emailTextView.text = user.name
             itemView.setOnClickListener {
                 userClickListener.onUserClick(user)
             }
@@ -50,4 +55,27 @@ class UserAdapter(private val userClickListener: UserClickListener) : RecyclerVi
 
     }
 
-}
+    override fun getFilter(): Filter {
+        return object : Filter() {
+            override fun performFiltering(constraint: CharSequence?): FilterResults {
+                val query = constraint?.toString()?.toLowerCase(Locale.getDefault())
+                val filteredList = if (query.isNullOrEmpty()) {
+                    userList
+                } else {
+                    userList.filter { user ->
+                        user.name.toLowerCase(Locale.getDefault()).contains(query)
+                    }
+                }
+                val results = FilterResults()
+                results.values = filteredList
+                return results
+            }
+
+            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                userList = results?.values as List<User>
+                notifyDataSetChanged()
+
+            }
+        }
+    }
+    }

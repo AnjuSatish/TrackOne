@@ -83,14 +83,11 @@ class Signin : AppCompatActivity() {
         firebaseAuth.signInWithEmailAndPassword(username, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Sign-in successful
                     Toast.makeText(this, "Sign-in successful", Toast.LENGTH_SHORT).show()
-                    // Proceed with further actions or navigate to another activity
                     val intent = Intent(this, DashboardActivity::class.java)
                     startActivity(intent)
                     finish()
                 } else {
-                    // Sign-in failed
                     Toast.makeText(this, "Sign-in failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }

@@ -2,9 +2,12 @@ package com.example.trackone.Activities
 
 import WeatherResponse
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
+import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -12,6 +15,7 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import com.example.trackone.R
 import com.example.trackone.userDatas.weatherMapApi
@@ -21,8 +25,10 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -38,58 +44,30 @@ import retrofit2.converter.gson.GsonConverterFactory
 class DashboardActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var dashboardButton: ImageButton
-    private lateinit var frameLayout: FrameLayout
-  //  private val usersListFragment = userListFragment()
+    private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var mapView: MapView
-    private lateinit var googleMap: GoogleMap
+    private lateinit var locationManager: LocationManager
     private lateinit var weatherTextView: TextView
-    private lateinit var mapsView: GoogleMap
+    private lateinit var userTv: TextView
+    private val path: MutableList<LatLng> = ArrayList()
 
 
 
-
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
         bottomNavigationView = findViewById(R.id.bottomNavigation)
         dashboardButton = findViewById(R.id.dashboardButton)
         weatherTextView=findViewById(R.id.weatherTextView)
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
+        userTv=findViewById(R.id.userTv)
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.mapFragment) as? SupportMapFragment
+        mapFragment?.getMapAsync(this)
+        val userName = intent.getStringExtra("name")
+        userTv.text = userName
 
-            return
-        }
-        val database = FirebaseDatabase.getInstance()
-        val currentUser = FirebaseAuth.getInstance().currentUser
-
-        val userRef = database.getReference("users/location")
-        userRef.addValueEventListener(object : ValueEventListener{
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val latitude = dataSnapshot.child("latitude").getValue(Double::class.java)
-                val longitude = dataSnapshot.child("longitude").getValue(Double::class.java)
-
-                // Use the location data to fetch weather information
-                fetchWeatherAndUpdateDatabase(latitude, longitude)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
-            }
-
-
-        })
-        mapView = findViewById(R.id.mapView)
-        mapView.onCreate(savedInstanceState)
-        mapView.getMapAsync(this)
-
+        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+        fusedLocationClient=LocationServices.getFusedLocationProviderClient(this)
         // Set bottom navigation item selected listener
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
@@ -99,7 +77,6 @@ class DashboardActivity : AppCompatActivity(), OnMapReadyCallback {
                     true
                 }
                 R.id.menu_users_list -> {
-                    weatherTextView.visibility=View.VISIBLE
                     val intent = Intent(this@DashboardActivity, usersListActivity::class.java)
                     startActivity(intent)
                     true
@@ -107,13 +84,53 @@ class DashboardActivity : AppCompatActivity(), OnMapReadyCallback {
                 else -> false
             }
         }
-
-
-        // Set click listener for dashboard button
         dashboardButton.setOnClickListener { view ->
             showDashboardPopupMenu(view)
         }
     }
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+
+        // Enable the My Location button and permission check
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        )else {
+            mMap.isMyLocationEnabled = true
+            googleMap.setOnMyLocationChangeListener { location: Location? ->
+                location?.let { updateLocationInFirebase(it) }
+
+            }
+            mMap.uiSettings.isMyLocationButtonEnabled = true
+        }
+
+        getCurrentLocationAndUpdateFirebase()
+    }
+
+    private fun updateLocationInFirebase(location: Location) {
+        val auth = FirebaseAuth.getInstance()
+        val currentUser = auth.currentUser
+        val latLng = LatLng(location.latitude, location.longitude)
+        if (currentUser != null) {
+            val userId = currentUser.uid
+            val databaseRef = FirebaseDatabase.getInstance().reference
+            val locationRef = databaseRef.child("users").child(userId).child("location")
+            locationRef.setValue(location)
+                .addOnSuccessListener {
+                }
+                .addOnFailureListener { error ->
+                   Toast.makeText(this,"Failed to update Location",Toast.LENGTH_SHORT).show()
+                }
+
+        } else {
+            Toast.makeText(this,"Failed",Toast.LENGTH_SHORT).show()
+
+        }
+            }
 
     fun fetchWeatherAndUpdateDatabase(latitude: Double?, longitude: Double?) {
         val apiKey = "6a4c8c10b92ddc1804f329692259fd33"
@@ -133,45 +150,20 @@ class DashboardActivity : AppCompatActivity(), OnMapReadyCallback {
                     val weatherResponse = response.body()
                     val temperature = weatherResponse?.main?.temp
                     val description = weatherResponse?.weather?.get(0)?.description
-
                     runOnUiThread {
                         // Assuming you have a TextView for temperature
                         weatherTextView.text =  "Temperature: $temperature°C\nWeather: $description"
 
-                        // Assuming you have a TextView for weather description
-                        //  descriptionTextView.text = description
-                    }                    // ...
+                    }
                 } else {
-                    // Handle error case
-                    // ...
+
                 }
             }
 
             override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
-                // Handle failure case
-                // ...
+
             }
         })
-    }
-
-    override fun onResume() {
-        super.onResume()
-        mapView.onResume()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        mapView.onPause()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mapView.onDestroy()
-    }
-
-    override fun onLowMemory() {
-        super.onLowMemory()
-        mapView.onLowMemory()
     }
 
     private fun showDashboardPopupMenu(view: View) {
@@ -187,7 +179,7 @@ class DashboardActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
                 R.id.menu_weatherview -> {
                     weatherTextView.visibility=View.VISIBLE
-
+                    getWeatherDataAndUpdateFirebase()
                    // getCurrentLocationAndFetchWeather()
                     true
                 }
@@ -198,8 +190,30 @@ class DashboardActivity : AppCompatActivity(), OnMapReadyCallback {
         popupMenu.show()
     }
 
-    override fun onMapReady(googleMap: GoogleMap) {
-        mapsView = googleMap
+    private fun getWeatherDataAndUpdateFirebase() {
+        val database = FirebaseDatabase.getInstance()
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        val userRef = database.getReference("users/$userId/location")
+        userRef.addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val latitude = dataSnapshot.child("latitude").getValue(Double::class.java)
+                val longitude = dataSnapshot.child("longitude").getValue(Double::class.java)
+
+                fetchWeatherAndUpdateDatabase(latitude, longitude)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+
+        })
+    }
+
+
+    private fun getCurrentLocationAndUpdateFirebase() {
+
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -208,42 +222,46 @@ class DashboardActivity : AppCompatActivity(), OnMapReadyCallback {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+            val LOCATION_PERMISSION_REQUEST_CODE = 1
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                LOCATION_PERMISSION_REQUEST_CODE
+            )
             return
         }
-        mapsView.isMyLocationEnabled = true
-        mapsView.uiSettings.isMyLocationButtonEnabled = true
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    val currentLatLng = LatLng(location.latitude, location.longitude)
+                    mMap.addMarker(
+                        MarkerOptions().position(currentLatLng).title("Current Location")
+                    )
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 18f))
+                    if (path.size > 1) {
+                        mMap.addPolyline(PolylineOptions().addAll(path).color(Color.BLUE))
+                    }
+                }
+        }
 
-        // Set a listener to get the current location once it's available
-        mapsView.setOnMyLocationChangeListener(object : GoogleMap.OnMyLocationChangeListener {
-            override fun onMyLocationChange(location: Location) {
-                val latitude = location.latitude
-                val longitude = location.longitude
-                saveLocationToFirebase(latitude, longitude)
+    }
 
-                fetchWeatherAndUpdateDatabase(latitude, longitude)
-                val currentLatLng = LatLng(latitude, longitude)
-                mapsView.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12f))
-
-                // Add a marker at the current location
-                mapsView.addMarker(MarkerOptions().position(currentLatLng).title("Current Location"))
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        val REQUEST_CODE_LOCATION_PERMISSION = 1
+        if (requestCode == REQUEST_CODE_LOCATION_PERMISSION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getCurrentLocationAndUpdateFirebase()
+            } else {
+                Toast.makeText(this,"Permission Denied",Toast.LENGTH_SHORT).show()
             }
-        })
+        }
     }
 
-private fun saveLocationToFirebase(latitude: Double, longitude: Double) {
-    val locationRef = FirebaseDatabase.getInstance().getReference("users/location")
-    locationRef.child("latitude").setValue(latitude)
-    locationRef.child("longitude").setValue(longitude)
 
-
-    }
 
 }
 

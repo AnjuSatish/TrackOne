@@ -46,12 +46,16 @@ class usersListActivity : AppCompatActivity() , UserAdapter.UserClickListener {
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
-                searchUsers(query)
-                return true
+               // searchUsers(query)
+                return false
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                searchUsers(newText)
+                if (newText.isNullOrEmpty()) {
+                    userAdapter.filter.filter(null) // Passing null to remove the filter
+                } else {
+                    userAdapter.filter.filter(newText)
+                }
                 return true
             }
         })
@@ -94,12 +98,6 @@ class usersListActivity : AppCompatActivity() , UserAdapter.UserClickListener {
         })
 }
 
-    private fun searchUsers(query: String) {
-        val filteredList = userList.filter { user ->
-            user.email.contains(query, ignoreCase = true)
-        }
-        showUsers(filteredList)
-    }
 
     private fun showUsers(users: List<User>) {
         userAdapter.filterList(users)
@@ -130,10 +128,9 @@ class usersListActivity : AppCompatActivity() , UserAdapter.UserClickListener {
     }
 
     override fun onUserClick(user: User) {
-        val selectedUserId = user.userId
-
         val intent = Intent(this, DashboardActivity::class.java)
-        intent.putExtra("userId", selectedUserId)
+        intent.putExtra("userId", user.userId)
+        intent.putExtra("name", user.name)
         startActivity(intent)
     }
 
