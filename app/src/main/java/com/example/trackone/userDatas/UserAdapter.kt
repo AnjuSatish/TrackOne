@@ -1,10 +1,11 @@
-package com.example.trackone
+package com.example.trackone.userDatas
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.trackone.R
 
 class UserAdapter(private val userClickListener: UserClickListener) : RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
     private var userList: List<User> = emptyList()
@@ -38,7 +39,7 @@ class UserAdapter(private val userClickListener: UserClickListener) : RecyclerVi
       //  private val nameTextView: TextView = itemView.findViewById(R.id.nameTextView)
         private val emailTextView: TextView = itemView.findViewById(R.id.usernameTextView)
 
-        fun bind(user: User,userClickListener: UserClickListener) {
+        fun bind(user: User, userClickListener: UserClickListener) {
            // nameTextView.text = user.name
             emailTextView.text = user.email
             itemView.setOnClickListener {

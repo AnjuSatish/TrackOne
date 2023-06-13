@@ -1,4 +1,4 @@
-package com.example.trackone
+package com.example.trackone.Activities
 
 import android.content.Intent
 import android.os.Bundle
@@ -8,15 +8,8 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.trackone.ui.theme.TrackOneTheme
+import com.example.trackone.R
+import com.example.trackone.userDatas.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 

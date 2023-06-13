@@ -1,4 +1,4 @@
-package com.example.trackone
+package com.example.trackone.Activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -10,6 +10,9 @@ import android.widget.PopupMenu
 import android.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.trackone.R
+import com.example.trackone.userDatas.User
+import com.example.trackone.userDatas.UserAdapter
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -57,7 +60,7 @@ class usersListActivity : AppCompatActivity() , UserAdapter.UserClickListener {
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.menu_locations -> {
-                    val intent = Intent(this@usersListActivity, LocationActivity::class.java)
+                    val intent = Intent(this@usersListActivity, DashboardActivity::class.java)
                     startActivity(intent)
                     true
                 }
@@ -109,12 +112,12 @@ class usersListActivity : AppCompatActivity() , UserAdapter.UserClickListener {
         popupMenu.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.menu_mapview -> {
-                    val intent = Intent(this@usersListActivity, LocationActivity::class.java)
+                    val intent = Intent(this@usersListActivity, DashboardActivity::class.java)
                     startActivity(intent)
                     true
                 }
                 R.id.menu_weatherview -> {
-                    val intent = Intent(this@usersListActivity, WeatherMapViewActivity::class.java)
+                    val intent = Intent(this@usersListActivity, DashboardActivity::class.java)
                     startActivity(intent)
                     // getCurrentLocationAndFetchWeather()
                     true
@@ -129,7 +132,7 @@ class usersListActivity : AppCompatActivity() , UserAdapter.UserClickListener {
     override fun onUserClick(user: User) {
         val selectedUserId = user.userId
 
-        val intent = Intent(this, LocationActivity::class.java)
+        val intent = Intent(this, DashboardActivity::class.java)
         intent.putExtra("userId", selectedUserId)
         startActivity(intent)
     }

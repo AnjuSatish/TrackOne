@@ -7,7 +7,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sign Up"
+        android:text="Sign Up!!"
         android:layout_marginTop="50dp"
         android:textSize="24sp"
         android:textColor="@color/black"
@@ -62,6 +62,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/submit_curve"
         android:layout_marginTop="50dp"
+        android:textColor="@color/white"
         android:layout_gravity="center"
         android:text="Sign Up" />
 

@@ -1,4 +1,4 @@
-package com.example.trackone
+package com.example.trackone.Activities
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import com.example.trackone.R
 import com.google.firebase.auth.FirebaseAuth
 
 class Signin : AppCompatActivity() {
@@ -85,7 +86,7 @@ class Signin : AppCompatActivity() {
                     // Sign-in successful
                     Toast.makeText(this, "Sign-in successful", Toast.LENGTH_SHORT).show()
                     // Proceed with further actions or navigate to another activity
-                    val intent = Intent(this, LocationActivity::class.java)
+                    val intent = Intent(this, DashboardActivity::class.java)
                     startActivity(intent)
                     finish()
                 } else {

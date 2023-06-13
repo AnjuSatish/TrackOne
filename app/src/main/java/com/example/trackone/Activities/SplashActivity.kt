@@ -1,9 +1,10 @@
-package com.example.trackone
+package com.example.trackone.Activities
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import com.example.trackone.R
 
 class SplashActivity : AppCompatActivity() {
     private val splashDelay: Long = 2000

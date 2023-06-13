@@ -42,6 +42,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="50dp"
         android:layout_gravity="center"
+        android:textColor="@color/white"
         android:background="@drawable/submit_curve"
         android:text="LogIn Now" />
 
